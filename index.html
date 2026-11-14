@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit 3: Communication - Giving Compliments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: fall linear infinite;
+            z-index: 1;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10px) translateX(0); }
+            100% { transform: translateY(105vh) translateX(30px); }
+        }
+
+        #fireworks-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .card-shadow {
+            box-shadow: 0 12px 30px -5px rgba(27, 94, 32, 0.2), 0 8px 12px -6px rgba(27, 94, 32, 0.1);
+        }
+
+        .highlight-phrase {
+            background-color: #fef08a;
+            color: #854d0e;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 800;
+            display: inline-block;
+            border: 1px solid #fde047;
+        }
+    </style>
+</head>
+<body class="flex flex-col justify-between text-gray-800 relative selection:bg-emerald-200">
+
+    <canvas id="fireworks-canvas"></canvas>
+    <div id="snow-container" class="fixed inset-0 overflow-hidden pointer-events-none z-0"></div>
+
+    <!-- Header Navigation -->
+    <header class="w-full bg-emerald-800 text-white py-4 px-6 shadow-xl z-10 flex flex-wrap justify-between items-center sticky top-0 backdrop-blur-md bg-opacity-95 border-b border-emerald-600">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
+                🌱
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black tracking-tight text-white">Global Success 9</h1>
+                <p class="text-xs text-emerald-200 font-medium hidden sm:block">Unit 3: Healthy Living for Teens — Getting Started</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3 mt-2 sm:mt-0">
+            <div id="mode-badge" class="bg-emerald-950/80 border border-emerald-500 px-3 py-1 rounded-full text-xs font-semibold text-emerald-200 shadow-sm">
+                Listen & Read Mode
+            </div>
+            <div class="bg-amber-400 text-emerald-950 font-black px-4 py-1.5 rounded-full text-sm shadow-md flex items-center space-x-1">
+                <span>⭐ Score:</span>
+                <span id="score-display" class="text-lg">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="w-full max-w-4xl mx-auto px-4 mt-6 z-10 flex flex-wrap justify-center gap-2 sm:gap-3">
+        <button id="tab-listen" onclick="switchMode('listen')" class="px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-base shadow-md transition transform active:scale-95 cursor-pointer bg-emerald-600 text-white border-2 border-emerald-500">
+            🎧 Listen & Read
+        </button>
+        <button id="tab-roleplay" onclick="switchMode('roleplay')" class="px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-base shadow-md transition transform active:scale-95 cursor-pointer bg-white text-emerald-800 border-2 border-emerald-200 hover:bg-emerald-50">
+            🎭 Interactive Roleplay
+        </button>
+        <button id="tab-quiz" onclick="switchMode('quiz')" class="px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-base shadow-md transition transform active:scale-95 cursor-pointer bg-white text-emerald-800 border-2 border-emerald-200 hover:bg-emerald-50">
+            📝 Comprehension Quiz
+        </button>
+    </div>
+
+    <!-- Main Interactive Content Container -->
+    <main class="flex-grow flex items-center justify-center p-4 my-2 z-10">
+        <div class="w-full max-w-4xl bg-white/95 backdrop-blur-md rounded-3xl card-shadow p-5 sm:p-8 transition-all duration-300 border border-emerald-100">
+
+            <!-- ================= MODE 1: LISTEN & READ ================= -->
+            <div id="listen-mode-view" class="block space-y-6">
+                <div class="text-center">
+                    <span class="text-xs font-bold uppercase tracking-widest text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full">Unit 3 • Getting Started</span>
+                    <h2 class="text-2xl sm:text-3xl font-black text-emerald-900 mt-2">Advice from a School Counsellor</h2>
+                    <p class="text-sm text-emerald-700 font-medium mt-1">Listen and read the conversation about physical and mental health.</p>
+                </div>
+
+                <div class="flex justify-center space-x-3 my-4">
+                    <button onclick="playFullDialogue()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base px-6 py-3 rounded-full shadow-md transition transform active:scale-95 flex items-center space-x-2">
+                        <span>🔊 Play Full Audio</span>
+                    </button>
+                    <button onclick="stopAudio()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-base px-5 py-3 rounded-full shadow-md transition transform active:scale-95 flex items-center space-x-1">
+                        <span>⏹ Stop</span>
+                    </button>
+                </div>
+
+                <!-- Dialogue Card -->
+                <div class="bg-emerald-50/60 rounded-2xl p-6 border-2 border-emerald-200 space-y-4 max-h-[450px] overflow-y-auto">
+                    <div id="line-0" class="p-3 rounded-xl transition-all duration-300 flex items-start space-x-3 bg-white shadow-sm border border-emerald-100">
+                        <span class="text-2xl">👩‍🏫</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-extrabold text-emerald-900">School Counsellor:</span>
+                                <button onclick="speakLine('Good morning, class. Welcome to our Tips for Good Physical and Mental Health. In this session, feel free to ask any questions.')" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">🔊 Listen</button>
+                            </div>
+                            <p class="text-base text-gray-800 mt-1">"Good morning, class. Welcome to our <span class="highlight-phrase">"Tips for Good Physical and Mental Health"</span>. In this session, feel free to ask any questions."</p>
+                        </div>
+                    </div>
+
+                    <div id="line-1" class="p-3 rounded-xl transition-all duration-300 flex items-start space-x-3 bg-white shadow-sm border border-emerald-100">
+                        <span class="text-2xl">👦</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-extrabold text-emerald-900">Nick:</span>
+                                <button onclick="speakLine('How can we maintain good physical health?')" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">🔊 Listen</button>
+                            </div>
+                            <p class="text-base text-gray-800 mt-1">"How can we maintain good physical health?"</p>
+                        </div>
+                    </div>
+
+                    <div id="line-2" class="p-3 rounded-xl transition-all duration-300 flex items-start space-x-3 bg-white shadow-sm border border-emerald-100">
+                        <span class="text-2xl">👩‍🏫</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-extrabold text-emerald-900">School Counsellor:</span>
+                                <button onclick="speakLine('You should get enough sleep, eat a healthy diet, and do physical exercise regularly.')" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">🔊 Listen</button>
+                            </div>
+                            <p class="text-base text-gray-800 mt-1">"You should get enough sleep, eat a healthy diet, and do physical exercise regularly."</p>
+                        </div>
+                    </div>
+
+                    <div id="line-3" class="p-3 rounded-xl transition-all duration-300 flex items-start space-x-3 bg-white shadow-sm border border-emerald-100">
+                        <span class="text-2xl">👧</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-extrabold text-emerald-900">Mai:</span>
+                                <button onclick="speakLine('My parents say students of our age need to sleep at least eight hours a day. Is that right?')" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">🔊 Listen</button>
+                            </div>
+                            <p class="text-base text-gray-800 mt-1">"My parents say students of our age need to sleep at least eight hours a day. Is that right?"</p>
+                        </div>
+                    </div>
+
+                    <div id="line-4" class="p-3 rounded-xl transition-all duration-300 flex items-start space-x-3 bg-white shadow-sm border border-emerald-100">
+                        <span class="text-2xl">👩‍🏫</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-extrabold text-emerald-900">School Counsellor:</span>
+                                <button onclick="speakLine('Yes, it is.')" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">🔊 Listen</button>
+                            </div>
+                            <p class="text-base text-gray-800 mt-1">"Yes, it is."</p>
+                        </div>
+                    </div>
+
+                    <div id="line-5" class="p-3 rounded-xl transition-all duration-300 flex items-start space-x-3 bg-white shadow-sm border border-emerald-100">
+                        <span class="text-2xl">👦</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-extrabold text-emerald-900">Phong:</span>
+                                <button onclick="speakLine('But we often find it difficult to get a good night sleep, especially before exams. Could you offer us any advice?')" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">🔊 Listen</button>
+                            </div>
+                            <p class="text-base text-gray-800 mt-1">"But we often find it difficult to get a good night's sleep, especially before exams. Could you offer us any advice?"</p>
+                        </div>
+                    </div>
+
+                    <div id="line-6" class="p-3 rounded-xl transition-all duration-300 flex items-start space-x-3 bg-white shadow-sm border border-emerald-100">
+                        <span class="text-2xl">👩‍🏫</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-extrabold text-emerald-900">School Counsellor:</span>
+                                <button onclick="speakLine('I understand that exams bring about lots of stress. You can reduce this stress by studying long before the exam, not waiting until the night before it.')" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">🔊 Listen</button>
+                            </div>
+                            <p class="text-base text-gray-800 mt-1">"I understand that exams bring about lots of stress. You can reduce this stress by studying long before the exam, not waiting until the night before it."</p>
+                        </div>
+                    </div>
+
+                    <div id="line-7" class="p-3 rounded-xl transition-all duration-300 flex items-start space-x-3 bg-white shadow-sm border border-emerald-100">
+                        <span class="text-2xl">👦</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-extrabold text-emerald-900">Phong:</span>
+                                <button onclick="speakLine('Thank you. Do you have any tips about looking after our mental health?')" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">🔊 Listen</button>
+                            </div>
+                            <p class="text-base text-gray-800 mt-1">"Thank you. Do you have any tips about looking after our mental health?"</p>
+                        </div>
+                    </div>
+
+                    <div id="line-8" class="p-3 rounded-xl transition-all duration-300 flex items-start space-x-3 bg-white shadow-sm border border-emerald-100">
+                        <span class="text-2xl">👩‍🏫</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-extrabold text-emerald-900">School Counsellor:</span>
+                                <button onclick="speakLine('If you want to have good mental health, you should have a well-balanced life. I mean you should balance your study and life.')" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">🔊 Listen</button>
+                            </div>
+                            <p class="text-base text-gray-800 mt-1">"If you want to have good mental health, you should have a well-balanced life. I mean you should balance your study and life."</p>
+                        </div>
+                    </div>
+
+                    <div id="line-9" class="p-3 rounded-xl transition-all duration-300 flex items-start space-x-3 bg-white shadow-sm border border-emerald-100">
+                        <span class="text-2xl">👦</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-extrabold text-emerald-900">Nick:</span>
+                                <button onclick="speakLine('But how can we balance them?')" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">🔊 Listen</button>
+                            </div>
+                            <p class="text-base text-gray-800 mt-1">"But how can we balance them?"</p>
+                        </div>
+                    </div>
+
+                    <div id="line-10" class="p-3 rounded-xl transition-all duration-300 flex items-start space-x-3 bg-white shadow-sm border border-emerald-100">
+                        <span class="text-2xl">👩‍🏫</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-extrabold text-emerald-900">School Counsellor:</span>
+                                <button onclick="speakLine('Well, you have to manage your time by planning your schedule and giving priority to your work. And you should keep a balance between study and play.')" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">🔊 Listen</button>
+                            </div>
+                            <p class="text-base text-gray-800 mt-1">"Well, you have to manage your time by planning your schedule and giving priority to your work. And you should keep a balance between study and play."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= MODE 2: ROLEPLAY ================= -->
+            <div id="roleplay-mode-view" class="hidden space-y-6">
+                <div class="text-center">
+                    <span class="text-xs font-bold uppercase tracking-widest text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full">Unit 3 • Interactive Practice</span>
+                    <h2 class="text-2xl sm:text-3xl font-black text-emerald-900 mt-2">Roleplay the Dialogue</h2>
+                    <p class="text-sm text-emerald-700 font-medium mt-1">Choose a character and complete the conversation lines correctly.</p>
+                </div>
+
+                <div class="flex justify-center space-x-3 flex-wrap gap-2">
+                    <button id="role-counsellor-btn" onclick="selectRole('School Counsellor')" class="px-5 py-2 rounded-full font-extrabold text-xs sm:text-sm border-2 border-emerald-500 bg-emerald-600 text-white shadow-md">
+                        Counsellor 👩‍🏫
+                    </button>
+                    <button id="role-nick-btn" onclick="selectRole('Nick')" class="px-5 py-2 rounded-full font-extrabold text-xs sm:text-sm border-2 border-emerald-200 bg-white text-emerald-800 shadow-md">
+                        Nick 👦
+                    </button>
+                    <button id="role-mai-btn" onclick="selectRole('Mai')" class="px-5 py-2 rounded-full font-extrabold text-xs sm:text-sm border-2 border-emerald-200 bg-white text-emerald-800 shadow-md">
+                        Mai 👧
+                    </button>
+                    <button id="role-phong-btn" onclick="selectRole('Phong')" class="px-5 py-2 rounded-full font-extrabold text-xs sm:text-sm border-2 border-emerald-200 bg-white text-emerald-800 shadow-md">
+                        Phong 👦
+                    </button>
+                </div>
+
+                <div id="roleplay-card-container" class="space-y-4 bg-emerald-50/50 p-6 rounded-2xl border-2 border-emerald-200 max-h-[420px] overflow-y-auto"></div>
+
+                <div id="roleplay-feedback" class="hidden p-4 rounded-2xl text-center font-bold text-sm"></div>
+            </div>
+
+            <!-- ================= MODE 3: PRACTICE EXERCISES ================= -->
+            <div id="quiz-mode-view" class="hidden space-y-6">
+                <div class="text-center">
+                    <span class="text-xs font-bold uppercase tracking-widest text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full">Unit 3 • Reading Quiz</span>
+                    <h2 class="text-2xl sm:text-3xl font-black text-emerald-900 mt-2">Comprehension Quiz</h2>
+                    <p class="text-sm text-emerald-700 font-medium mt-1">Test your understanding of the conversation between the counsellor and students.</p>
+                </div>
+
+                <div id="quiz-questions-container" class="space-y-6 max-h-[450px] overflow-y-auto pr-2"></div>
+
+                <div id="quiz-feedback-box" class="hidden p-4 rounded-2xl text-sm font-bold text-center border"></div>
+
+                <div class="flex justify-center">
+                    <button onclick="checkQuizAnswers()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-lg px-8 py-3.5 rounded-full shadow-lg transition transform active:scale-95 cursor-pointer flex items-center space-x-2">
+                        <span>Check Answers ✅</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full text-center py-4 text-xs text-emerald-900 bg-emerald-100/80 font-semibold z-10 border-t border-emerald-200">
+        Global Success 9 • Unit 3: Healthy Living for Teens ❄️🌱
+    </footer>
+
+    <script>
+        /* AUDIO & SOUND EFFECTS SYSTEM */
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.12);
+                    osc.frequency.setValueAtTime(783.99, now + 0.24);
+                    osc.frequency.setValueAtTime(1046.50, now + 0.36);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+                    osc.start(now);
+                    osc.stop(now + 0.7);
+                } else if (type === 'incorrect') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(329.63, now);
+                    osc.frequency.setValueAtTime(293.66, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                }
+            } catch (e) {
+                console.log("Audio play error", e);
+            }
+        }
+
+        /* TEXT-TO-SPEECH SYNTHESIS */
+        function speakLine(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function stopAudio() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            highlightLine(null);
+        }
+
+        const dialogueData = [
+            { text: "Good morning, class. Welcome to our \"Tips for Good Physical and Mental Health\". In this session, feel free to ask any questions.", speaker: "School Counsellor" },
+            { text: "How can we maintain good physical health?", speaker: "Nick" },
+            { text: "You should get enough sleep, eat a healthy diet, and do physical exercise regularly.", speaker: "School Counsellor" },
+            { text: "My parents say students of our age need to sleep at least eight hours a day. Is that right?", speaker: "Mai" },
+            { text: "Yes, it is.", speaker: "School Counsellor" },
+            { text: "But we often find it difficult to get a good night's sleep, especially before exams. Could you offer us any advice?", speaker: "Phong" },
+            { text: "I understand that exams bring about lots of stress. You can reduce this stress by studying long before the exam, not waiting until the night before it.", speaker: "School Counsellor" },
+            { text: "Thank you. Do you have any tips about looking after our mental health?", speaker: "Phong" },
+            { text: "If you want to have good mental health, you should have a well-balanced life. I mean you should balance your study and life.", speaker: "School Counsellor" },
+            { text: "But how can we balance them?", speaker: "Nick" },
+            { text: "Well, you have to manage your time by planning your schedule and giving priority to your work. And you should keep a balance between study and play.", speaker: "School Counsellor" }
+        ];
+
+        function playFullDialogue() {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+
+            let index = 0;
+            function speakNext() {
+                if (index >= dialogueData.length) {
+                    highlightLine(null);
+                    return;
+                }
+
+                highlightLine(index);
+                const item = dialogueData[index];
+                const utterance = new SpeechSynthesisUtterance(item.text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+
+                utterance.onend = function() {
+                    index++;
+                    setTimeout(speakNext, 350);
+                };
+
+                window.speechSynthesis.speak(utterance);
+            }
+
+            speakNext();
+        }
+
+        function highlightLine(index) {
+            for (let i = 0; i < dialogueData.length; i++) {
+                const lineEl = document.getElementById(`line-${i}`);
+                if (lineEl) {
+                    if (i === index) {
+                        lineEl.className = "p-3 rounded-xl transition-all duration-300 flex items-start space-x-3 bg-amber-100 border-2 border-amber-400 shadow-md scale-[1.01]";
+                    } else {
+                        lineEl.className = "p-3 rounded-xl transition-all duration-300 flex items-start space-x-3 bg-white shadow-sm border border-emerald-100";
+                    }
+                }
+            }
+        }
+
+        /* FIREWORKS & SNOW ANIMATION */
+        const canvas = document.getElementById('fireworks-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function createFirework(x, y) {
+            const colors = ['#22c55e', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'];
+            const particleCount = 50;
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (Math.PI * 2 / particleCount) * i;
+                const speed = Math.random() * 6 + 2;
+                particles.push({
+                    x: x, y: y,
+                    vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    radius: Math.random() * 3 + 2, alpha: 1,
+                    decay: Math.random() * 0.02 + 0.015
+                });
+            }
+        }
+
+        function animateFireworks() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.05;
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                } else {
+                    ctx.save();
+                    ctx.globalAlpha = p.alpha;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+            requestAnimationFrame(animateFireworks);
+        }
+        animateFireworks();
+
+        function triggerVictoryFireworks() {
+            createFirework(canvas.width * 0.3, canvas.height * 0.4);
+            setTimeout(() => createFirework(canvas.width * 0.7, canvas.height * 0.3), 150);
+            setTimeout(() => createFirework(canvas.width * 0.5, canvas.height * 0.5), 300);
+        }
+
+        function initSnow() {
+            const container = document.getElementById('snow-container');
+            const totalSnowflakes = 25;
+            for (let i = 0; i < totalSnowflakes; i++) {
+                const flake = document.createElement('div');
+                flake.className = 'snowflake';
+                const size = Math.random() * 6 + 4 + 'px';
+                flake.style.width = size;
+                flake.style.height = size;
+                flake.style.left = Math.random() * 100 + 'vw';
+                flake.style.opacity = Math.random() * 0.7 + 0.3;
+                flake.style.animationDuration = Math.random() * 6 + 5 + 's';
+                flake.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(flake);
+            }
+        }
+
+        /* ROLEPLAY LOGIC */
+        let currentRole = 'School Counsellor';
+        let userRoleplayChoices = {};
+
+        function selectRole(role) {
+            playSound('click');
+            currentRole = role;
+            userRoleplayChoices = {};
+
+            ['School Counsellor', 'Nick', 'Mai', 'Phong'].forEach(r => {
+                const btnId = 'role-' + r.toLowerCase().split(' ')[0] + '-btn';
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    if (r === role) {
+                        btn.className = "px-5 py-2 rounded-full font-extrabold text-xs sm:text-sm border-2 border-emerald-500 bg-emerald-600 text-white shadow-md";
+                    } else {
+                        btn.className = "px-5 py-2 rounded-full font-extrabold text-xs sm:text-sm border-2 border-emerald-200 bg-white text-emerald-800 shadow-md";
+                    }
+                }
+            });
+
+            renderRoleplay();
+        }
+
+        function renderRoleplay() {
+            const container = document.getElementById('roleplay-card-container');
+            container.innerHTML = '';
+
+            dialogueData.forEach((item, idx) => {
+                const isUserTurn = (item.speaker === currentRole);
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-xl border border-emerald-100 shadow-sm space-y-2";
+
+                let speakerIcon = '👩‍🏫';
+                if (item.speaker === 'Nick' || item.speaker === 'Phong') speakerIcon = '👦';
+                if (item.speaker === 'Mai') speakerIcon = '👧';
+
+                if (!isUserTurn) {
+                    card.innerHTML = `
+                        <div class="flex items-center space-x-2 font-black text-emerald-900">
+                            <span>${speakerIcon} ${item.speaker}:</span>
+                        </div>
+                        <p class="text-gray-800 text-base">"${item.text}"</p>
+                    `;
+                } else {
+                    // Generate distractors
+                    const allTexts = dialogueData.filter(d => d.speaker === currentRole).map(d => d.text);
+                    let options = [item.text];
+                    while(options.length < 3 && allTexts.length > 1) {
+                        const rand = allTexts[Math.floor(Math.random() * allTexts.length)];
+                        if (!options.includes(rand)) options.push(rand);
+                    }
+                    options.sort(() => Math.random() - 0.5);
+
+                    let selectOptions = `<option value="">-- Choose your line as ${currentRole} --</option>`;
+                    options.forEach(opt => {
+                        const sel = (userRoleplayChoices[idx] === opt) ? 'selected' : '';
+                        selectOptions += `<option value="${opt}" ${sel}>${opt}</option>`;
+                    });
+
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between font-black text-emerald-900">
+                            <span>${speakerIcon} Your turn (${currentRole}):</span>
+                            <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold">Select Line</span>
+                        </div>
+                        <select onchange="saveRoleplayChoice(${idx}, this.value)" class="w-full mt-2 p-2.5 rounded-xl border-2 border-emerald-300 font-semibold text-sm bg-emerald-50/50 text-emerald-950 focus:outline-none focus:border-emerald-600">
+                            ${selectOptions}
+                        </select>
+                    `;
+                }
+
+                container.appendChild(card);
+            });
+        }
+
+        function saveRoleplayChoice(idx, val) {
+            userRoleplayChoices[idx] = val;
+            checkRoleplayProgress();
+        }
+
+        function checkRoleplayProgress() {
+            let correctCount = 0;
+            let totalTurns = 0;
+
+            dialogueData.forEach((item, idx) => {
+                if (item.speaker === currentRole) {
+                    totalTurns++;
+                    if (userRoleplayChoices[idx] === item.text) {
+                        correctCount++;
+                    }
+                }
+            });
+
+            const feedback = document.getElementById('roleplay-feedback');
+            if (correctCount === totalTurns && totalTurns > 0) {
+                playSound('correct');
+                triggerVictoryFireworks();
+                updateScore(30);
+                feedback.className = "p-4 rounded-2xl text-center font-black text-sm bg-emerald-100 text-emerald-950 border border-emerald-400 block";
+                feedback.innerHTML = `🎉 Excellent Roleplay! You completed all lines correctly as ${currentRole}!`;
+            } else {
+                feedback.className = "hidden";
+            }
+        }
+
+        /* QUIZ DATA & LOGIC */
+        const quizQuestions = [
+            {
+                id: 1,
+                context: "What session are the class attending?",
+                options: [
+                    "Tips for Good Physical and Mental Health",
+                    "How to study math effectively",
+                    "Physical education training"
+                ],
+                correct: "Tips for Good Physical and Mental Health"
+            },
+            {
+                id: 2,
+                context: "According to Mai's parents, how many hours do students need to sleep daily?",
+                options: [
+                    "At least eight hours a day",
+                    "Six hours a day",
+                    "Ten hours a day"
+                ],
+                correct: "At least eight hours a day"
+            },
+            {
+                id: 3,
+                context: "How can students reduce exam stress?",
+                options: [
+                    "Studying long before the exam, not waiting until the night before",
+                    "Not studying at all",
+                    "Sleeping during the exam"
+                ],
+                correct: "Studying long before the exam, not waiting until the night before"
+            },
+            {
+                id: 4,
+                context: "What does the counsellor suggest for good mental health?",
+                options: [
+                    "Having a well-balanced life (balancing study and life/play)",
+                    "Playing video games all day",
+                    "Studying 24/7 without rest"
+                ],
+                correct: "Having a well-balanced life (balancing study and life/play)"
+            }
+        ];
+
+        let quizUserAnswers = {};
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-questions-container');
+            container.innerHTML = '';
+
+            quizQuestions.forEach((q, idx) => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl border-2 border-emerald-100 shadow-sm space-y-3";
+
+                let optionsHTML = `<div class="space-y-2 mt-2">`;
+                q.options.forEach((opt) => {
+                    const isChecked = quizUserAnswers[q.id] === opt ? 'checked' : '';
+                    optionsHTML += `
+                        <label class="flex items-center space-x-3 p-3 rounded-xl border border-emerald-200 hover:bg-emerald-50/60 transition cursor-pointer">
+                            <input type="radio" name="quiz-${q.id}" value="${opt}" ${isChecked} onchange="selectQuizOption(${q.id}, '${opt}')" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500">
+                            <span class="text-sm font-semibold text-gray-800">${opt}</span>
+                        </label>
+                    `;
+                });
+                optionsHTML += `</div>`;
+
+                card.innerHTML = `
+                    <div class="text-xs font-bold text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-lg w-fit">Question ${idx + 1}</div>
+                    <p class="text-sm font-bold text-emerald-950">${q.context}</p>
+                    ${optionsHTML}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function selectQuizOption(qId, val) {
+            playSound('click');
+            quizUserAnswers[qId] = val;
+        }
+
+        function checkQuizAnswers() {
+            initAudio();
+            let correctCount = 0;
+            const feedbackBox = document.getElementById('quiz-feedback-box');
+
+            quizQuestions.forEach(q => {
+                if (quizUserAnswers[q.id] === q.correct) {
+                    correctCount++;
+                }
+            });
+
+            if (correctCount === quizQuestions.length) {
+                playSound('correct');
+                triggerVictoryFireworks();
+                updateScore(50);
+
+                feedbackBox.className = "p-4 rounded-2xl mb-6 text-sm font-extrabold border bg-emerald-100 border-emerald-400 text-emerald-950 block text-center";
+                feedbackBox.innerHTML = `🎉 Fantastic! All ${quizQuestions.length}/${quizQuestions.length} reading comprehension answers are correct!`;
+            } else {
+                playSound('incorrect');
+                feedbackBox.className = "p-4 rounded-2xl mb-6 text-sm font-bold border bg-amber-100 border-amber-400 text-amber-950 block text-center";
+                feedbackBox.innerHTML = `💪 You got ${correctCount}/${quizQuestions.length} correct. Review the conversation and try again!`;
+            }
+            feedbackBox.classList.remove('hidden');
+        }
+
+        /* STATE MANAGEMENT & TAB SWITCHING */
+        let totalScore = 0;
+
+        function updateScore(points) {
+            totalScore += points;
+            document.getElementById('score-display').innerText = totalScore;
+        }
+
+        function switchMode(mode) {
+            initAudio();
+            stopAudio();
+
+            const listenView = document.getElementById('listen-mode-view');
+            const roleplayView = document.getElementById('roleplay-mode-view');
+            const quizView = document.getElementById('quiz-mode-view');
+
+            const tabListen = document.getElementById('tab-listen');
+            const tabRoleplay = document.getElementById('tab-roleplay');
+            const tabQuiz = document.getElementById('tab-quiz');
+            const modeBadge = document.getElementById('mode-badge');
+
+            const activeClass = "px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-base shadow-md transition transform active:scale-95 cursor-pointer bg-emerald-600 text-white border-2 border-emerald-500";
+            const inactiveClass = "px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-base shadow-md transition transform active:scale-95 cursor-pointer bg-white text-emerald-800 border-2 border-emerald-200 hover:bg-emerald-50";
+
+            listenView.classList.add('hidden');
+            roleplayView.classList.add('hidden');
+            quizView.classList.add('hidden');
+
+            tabListen.className = inactiveClass;
+            tabRoleplay.className = inactiveClass;
+            tabQuiz.className = inactiveClass;
+
+            if (mode === 'listen') {
+                listenView.classList.remove('hidden');
+                tabListen.className = activeClass;
+                modeBadge.innerText = "Listen & Read Mode";
+            } else if (mode === 'roleplay') {
+                roleplayView.classList.remove('hidden');
+                tabRoleplay.className = activeClass;
+                modeBadge.innerText = "Interactive Roleplay Mode";
+                renderRoleplay();
+            } else if (mode === 'quiz') {
+                quizView.classList.remove('hidden');
+                tabQuiz.className = activeClass;
+                modeBadge.innerText = "Comprehension Quiz Mode";
+                renderQuiz();
+            }
+        }
+
+        /* INITIALIZATION */
+        window.onload = function() {
+            initSnow();
+        };
+    </script>
+</body>
+</html>
